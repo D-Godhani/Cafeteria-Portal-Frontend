@@ -1,35 +1,38 @@
-import { Ellipsis } from "lucide-react";
 import Link from "next/link";
-import PrimaryButton from "../buttons/primary";
+import React from "react";
 
-export default function Navbar() {
+const Navbar: React.FC = () => {
   return (
-    <div className="navbar bg-base-300 shadow-sm shadow-red-800">
+    // The main navbar container. 'bg-base-100' gives it a default theme color.
+    <div className="navbar bg-base-100 shadow-sm">
+      {/* Left side of the navbar: Portal Title */}
       <div className="flex-1">
-        <a className="btn btn-ghost text-xl">Cafeteria Portal</a>
+        <Link href="/" className="btn btn-ghost text-xl">
+          Complaints Portal
+        </Link>
       </div>
+
+      {/* Right side of the navbar: Navigation links */}
       <div className="flex-none">
-        <ul className="flex gap-5 menu menu-horizontal px-1">
+        <ul className="menu menu-horizontal items-center space-x-2 px-1">
           <li>
-            <PrimaryButton href="/home" color="bg-white">
-              Home
-            </PrimaryButton>
+            <Link href="/home">Home</Link>
           </li>
           <li>
-            <details>
-              <summary>Menu</summary>
-              <ul className="bg-base-100 rounded-t-none p-2">
-                <li>
-                  <Link href="/login">Login</Link>
-                </li>
-                <li>
-                  <Link href="/signup">Signup</Link>
-                </li>
-              </ul>
-            </details>
+            <Link href="/complaints">Complaints</Link>
+          </li>
+          <li>
+            <Link href="/feedback">Feedback</Link>
+          </li>
+          <li>
+            <Link href="/login" className="btn btn-primary btn-sm text-white">
+              Login
+            </Link>
           </li>
         </ul>
       </div>
     </div>
   );
-}
+};
+
+export default Navbar;
