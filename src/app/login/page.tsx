@@ -1,4 +1,5 @@
 import Link from "next/link";
+import logo from "../../../public/logo.png";
 
 const Login: React.FC = () => {
   return (
@@ -9,7 +10,13 @@ const Login: React.FC = () => {
       <div className="card w-full max-w-md rounded-2xl shadow-xl bg-base-100">
         <div className="card-body">
           {/* Title */}
-          <h1 className="text-center text-3xl font-bold text-base-content">
+
+          <div className="self-center">
+            <Link href="/">
+              <img src={logo.src} className="h-30 w-30" alt="logo" />
+            </Link>
+          </div>
+          <h1 className="text-center text-2xl font-bold text-base-content">
             Welcome Back
           </h1>
           <p className="text-center text-sm text-gray-500 mb-4">

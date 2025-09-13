@@ -1,15 +1,20 @@
 import Link from "next/link";
-
+import logo from "../../../public/logo.png";
 const Signup: React.FC = () => {
   return (
     <div
       data-theme="light"
       className="flex min-h-screen items-center justify-center bg-base-200"
     >
-      <div className="card w-full max-w-md rounded-2xl shadow-xl bg-base-100">
+      <div className="card w-full m-10 max-w-md rounded-2xl shadow-xl bg-base-100">
         <div className="card-body">
+          <div className="self-center">
+            <Link href="/">
+              <img src={logo.src} className="h-30 w-30" alt="logo" />
+            </Link>
+          </div>
           {/* Title */}
-          <h1 className="text-center text-3xl font-bold text-base-content mb-6">
+          <h1 className="text-center text-2xl font-bold text-base-content mb-6">
             Create an Account
           </h1>
           {/* Form */}
