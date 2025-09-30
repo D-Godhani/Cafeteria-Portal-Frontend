@@ -1,19 +1,44 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import logo from "../../../public/logo.png";
+import { useUser } from "../../../contexts/authContext"; // Adjust path if needed
+// import logo from "../../../../public/logo.png";
 
 const Login: React.FC = () => {
+  // 1. Manage state for inputs and errors
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  // 2. Get the login function from our context
+  const { login } = useUser();
+
+  // 3. Handle the form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(""); // Clear previous errors
+
+    try {
+      // Call the login function with user credentials
+      await login({ emailId: email, password });
+      // The context will handle redirection on success
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "An error occurred during login.");
+    }
+  };
+
   return (
     <div
       data-theme="light"
-      className="flex min-h-screen items-center justify-center bg-base-200"
+      className="flex min-h-screen min-w-fit items-center justify-center bg-gray-100"
     >
-      <div className="card w-full max-w-md rounded-2xl shadow-xl bg-base-100">
+      <div className="card w-full m-10 max-w-lg rounded-2xl shadow-[var(--my-shadow)] bg-base-100">
         <div className="card-body">
-          {/* Title */}
-
           <div className="self-center">
             <Link href="/">
-              <img src={logo.src} className="h-30 w-30" alt="logo" />
+              <img src="/logo.png" className="h-30 w-30" alt="logo" />
             </Link>
           </div>
           <h1 className="text-center text-2xl font-bold text-base-content">
@@ -23,8 +48,7 @@ const Login: React.FC = () => {
             Please sign in to continue
           </p>
 
-          {/* Form */}
-          <form className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div className="form-control">
               <label htmlFor="email" className="label">
@@ -35,6 +59,8 @@ const Login: React.FC = () => {
                 id="email"
                 placeholder="example@dau.ac.in"
                 className="input input-bordered w-full"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -49,31 +75,24 @@ const Login: React.FC = () => {
                 id="password"
                 placeholder="••••••••"
                 className="input input-bordered w-full"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
 
-            {/* Remember me + Forgot Password */}
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="checkbox checkbox-sm" />
-                <span className="label-text">Remember me</span>
-              </label>
-              <Link href="#" className="link link-primary">
-                Forgot password?
-              </Link>
-            </div>
+            {/* Display Error Message */}
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
 
-            {/* Submit button */}
             <button type="submit" className="btn btn-primary w-full rounded-md">
               Sign In
             </button>
           </form>
 
-          {/* Divider */}
           <div className="divider">OR</div>
 
-          {/* Signup link */}
           <p className="text-center text-sm">
             Don’t have an account?{" "}
             <Link href="/signup" className="link link-primary font-medium">

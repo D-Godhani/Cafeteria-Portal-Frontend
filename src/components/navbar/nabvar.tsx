@@ -7,7 +7,7 @@ const Navbar: React.FC = () => {
     <div className="navbar bg-base-100 shadow-sm">
       {/* Left side of the navbar: Portal Title */}
       <div className="flex-1">
-        <Link href="/" className="btn btn-ghost text-xl">
+        <Link href="/" className="text-xl font-bold  m-2 p-2">
           Complaints Portal
         </Link>
       </div>
@@ -16,7 +16,7 @@ const Navbar: React.FC = () => {
       <div className="flex-none">
         <ul className="menu menu-horizontal items-center space-x-2 px-1">
           <li>
-            <Link href="/home">Home</Link>
+            <Link href="/">Home</Link>
           </li>
           <li>
             <Link href="/complaints">Complaints</Link>
@@ -25,7 +25,10 @@ const Navbar: React.FC = () => {
             <Link href="/feedback">Feedback</Link>
           </li>
           <li>
-            <Link href="/login" className="btn btn-primary btn-sm text-white">
+            <Link
+              href="/login"
+              className="btn btn-primary btn-sm text-white rounded-md"
+            >
               Login
             </Link>
           </li>
