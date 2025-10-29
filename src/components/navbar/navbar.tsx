@@ -1,38 +1,43 @@
 // src/components/navbar/navbar.tsx
-
-"use client"; // Required because we are using a hook (useUser)
+"use client";
 
 import Link from "next/link";
 import React from "react";
-import { useUser } from "@/contexts/authContext"; // Adjust the path if necessary
-import { LogOut, Power } from "lucide-react";
+import { useUser } from "@/contexts/authContext";
+import { Power, LogIn, UserPlus } from "lucide-react";
 
 const Navbar: React.FC = () => {
-  // 1. Get auth state and functions from the context
   const { isAuthenticated, user, logout, loading } = useUser();
 
   return (
-    <div className="navbar bg-base-100 shadow-sm">
+    // A clean white background with a shadow to "float" above the page
+    <div className="navbar bg-white shadow-md sticky top-0 z-50 px-4">
       {/* Left side: Portal Title */}
       <div className="flex-1">
-        <Link href="/" className="text-xl font-bold m-2 p-2">
-          Complaints Portal
+        <Link
+          href="/"
+          className="text-xl font-extrabold text-neutral hover:text-primary transition-colors"
+        >
+          Cafeteria Portal
         </Link>
       </div>
 
       {/* Right side: Navigation links */}
       <div className="flex-none">
-        {/* 2. Don't render links until the auth state is confirmed */}
-        {!loading && (
+        {/* Skeleton loader for links while auth state is loading */}
+        {loading ? (
+          <div className="flex items-center gap-4">
+            <div className="skeleton h-6 w-24"></div>
+            <div className="skeleton h-8 w-20 rounded-lg"></div>
+          </div>
+        ) : (
           <ul className="menu menu-horizontal items-center space-x-2 px-1">
-            {/* 3. Use a ternary operator for conditional rendering */}
-            {isAuthenticated || true ? (
+            {isAuthenticated ? (
               // --- USER IS LOGGED IN ---
               <>
-                <li>
-                  {/* Optional: Greet the user by name */}
-                  <span className="font-semibold text-red-600 hover:bg-transparent hover:cursor-default">
-                    <Link href="/">Welcome, {user?.name || "John Doe"}</Link>
+                <li className="hidden sm:block">
+                  <span className="font-semibold text-base-content/70">
+                    Welcome, {user?.name || "Student"}
                   </span>
                 </li>
                 <li>
@@ -44,9 +49,10 @@ const Navbar: React.FC = () => {
                 <li>
                   <button
                     onClick={logout}
-                    className="btn text-white btn-ghost shadow-xl btn-sm rounded-md bg-red-900"
+                    title="Logout"
+                    className="btn btn-secondary btn-sm btn-circle text-white"
                   >
-                    <Power />
+                    <Power size={16} />
                   </button>
                 </li>
               </>
@@ -54,21 +60,20 @@ const Navbar: React.FC = () => {
               // --- USER IS LOGGED OUT ---
               <>
                 <li>
-                  <Link href="/">Home</Link>
-                </li>
-                <li>
                   <Link
                     href="/login"
-                    className="btn btn-primary btn-sm text-white rounded-md"
+                    className="btn btn-primary btn-sm text-white rounded-sm"
                   >
+                    <LogIn size={16} />
                     Login
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/signup"
-                    className="btn btn-primary btn-sm rounded-md"
+                    className="btn btn-secondary btn-sm text-white rounded-sm"
                   >
+                    <UserPlus size={16} />
                     Signup
                   </Link>
                 </li>

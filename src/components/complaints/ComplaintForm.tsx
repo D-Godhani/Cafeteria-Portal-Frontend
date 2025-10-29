@@ -1,96 +1,116 @@
 // src/components/complaints/ComplaintForm.tsx
-
 "use client";
 
 import React, { useState } from "react";
-import { Send } from "lucide-react";
+import { createComplaint } from "@/services/complaintService";
+import { Send, ListChecks, Type } from "lucide-react";
 
-const ComplaintForm = () => {
+interface ComplaintFormProps {
+  onComplaintSubmitted: () => void;
+}
+
+const ComplaintForm: React.FC<ComplaintFormProps> = ({
+  onComplaintSubmitted,
+}) => {
   const [formData, setFormData] = useState({
     category: "",
     subject: "",
     description: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // **TODO**: Add your API call logic here
-    console.log("Complaint Submitted:", formData);
-    alert("Your complaint has been submitted successfully!");
-    // Reset form after submission
-    setFormData({ category: "", subject: "", description: "" });
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Assuming your API expects a `title` and `description`
+      await createComplaint({
+        title: `[${formData.category}] ${formData.subject}`,
+        description: formData.description,
+      });
+      onComplaintSubmitted(); // Refresh the list
+      setFormData({ category: "", subject: "", description: "" }); // Reset form
+    } catch (err) {
+      setError("Failed to submit complaint. Please try again.");
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="card bg-base-100 shadow-xl">
+    // 'sticky top-24' makes the form stay in view on scroll
+    <div className="card bg-white shadow-xl w-full sticky top-24">
       <div className="card-body">
-        <h2 className="card-title">New Complaint Form</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Category Dropdown */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Category</span>
-            </label>
+        <h2 className="card-title text-2xl">Lodge a New Complaint</h2>
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          {/* Category */}
+          <label className="input input-bordered flex items-center gap-2">
+            <ListChecks className="text-base-content/50" size={20} />
             <select
               name="category"
               value={formData.category}
-              onChange={handleChange}
-              className="select select-bordered w-full"
+              onChange={(e) =>
+                setFormData({ ...formData, category: e.target.value })
+              }
+              className="grow bg-transparent"
               required
             >
               <option value="" disabled>
-                Select a category
+                Select Category...
               </option>
-              <option value="Food Quality">Food Quality</option>
-              <option value="Service">Service</option>
-              <option value="Cleanliness">Cleanliness</option>
-              <option value="Other">Other</option>
+              <option>Food Quality</option>
+              <option>Service</option>
+              <option>Cleanliness</option>
+              <option>Other</option>
             </select>
-          </div>
+          </label>
 
-          {/* Subject Line */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Subject</span>
-            </label>
+          {/* Subject */}
+          <label className="input input-bordered flex items-center gap-2">
+            <Type className="text-base-content/50" size={20} />
             <input
               type="text"
               name="subject"
               value={formData.subject}
-              onChange={handleChange}
-              placeholder="e.g., Cold Samosas"
-              className="input input-bordered w-full"
+              onChange={(e) =>
+                setFormData({ ...formData, subject: e.target.value })
+              }
+              className="grow bg-transparent"
+              placeholder="Subject"
               required
             />
-          </div>
+          </label>
 
           {/* Description */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Description</span>
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              className="textarea textarea-bordered h-24"
-              placeholder="Please provide details about your issue..."
-              required
-            ></textarea>
-          </div>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            className="textarea textarea-bordered h-32"
+            placeholder="Please describe the issue in detail..."
+            required
+          ></textarea>
 
-          <div className="card-actions justify-end">
-            <button type="submit" className="btn btn-primary">
-              Submit <Send size={16} />
+          {error && <div className="text-error text-sm">{error}</div>}
+
+          <div className="card-actions">
+            <button
+              type="submit"
+              className="btn btn-accent w-full text-white"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <span className="loading loading-spinner"></span>
+              ) : (
+                "Submit Complaint"
+              )}
+              {!isSubmitting && <Send size={16} />}
             </button>
           </div>
         </form>
