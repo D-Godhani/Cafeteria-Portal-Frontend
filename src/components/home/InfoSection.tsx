@@ -76,31 +76,6 @@ const InfoSection: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Contact & Support Card (No changes needed here) */}
-          <div className="card bg-white shadow-lg">
-            <div className="card-body">
-              <h2 className="card-title text-2xl">Contact & Support</h2>
-              <p className="text-base-content/70">
-                For any queries or issues, reach out to the committee.
-              </p>
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center gap-3">
-                  <Mail size={20} className="text-accent" />
-                  <a
-                    href="mailto:cafeteria-comm@daiict.ac.in"
-                    className="link link-hover"
-                  >
-                    cafeteria-comm@daiict.ac.in
-                  </a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone size={20} className="text-accent" />
-                  <span>+91 12345 67890 (Admin Mentor)</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Sidebar (Right Side) (No changes needed here) */}

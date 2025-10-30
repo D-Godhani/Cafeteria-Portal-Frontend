@@ -3,6 +3,7 @@
 import InfoSection from "@/components/home/InfoSection"; // The ONLY content component needed now
 import Navbar from "@/components/navbar/navbar";
 import Footer from "@/components/home/Footer";
+import MenuSection from "@/components/home/MenuSection";
 
 const Home: React.FC = () => {
   return (
@@ -10,10 +11,8 @@ const Home: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-base-100">
       <Navbar />
       <main className="flex-grow">
-        {/* - Removed HeroSection and MenuSection.
-          - InfoSection is now the primary and only content on the homepage.
-        */}
         <InfoSection />
+        <MenuSection />
       </main>
       <Footer />
     </div>

@@ -32,7 +32,7 @@ const Navbar: React.FC = () => {
           </div>
         ) : (
           <ul className="menu menu-horizontal items-center space-x-2 px-1">
-            {isAuthenticated ? (
+            {isAuthenticated || true ? (
               // --- USER IS LOGGED IN ---
               <>
                 <li className="hidden sm:block">
@@ -71,7 +71,7 @@ const Navbar: React.FC = () => {
                 <li>
                   <Link
                     href="/signup"
-                    className="btn btn-secondary btn-sm text-white rounded-sm"
+                    className="btn btn-sm text-black bg-gray-200 border-2 border-black rounded-sm"
                   >
                     <UserPlus size={16} />
                     Signup
