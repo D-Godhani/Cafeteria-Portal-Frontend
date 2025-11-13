@@ -1,121 +1,118 @@
-// src/components/complaints/ComplaintForm.tsx
+// /src/components/complaints/ComplaintForm.tsx
 "use client";
 
 import React, { useState } from "react";
-import { createComplaint } from "@/services/complaintService";
-import { Send, ListChecks, Type } from "lucide-react";
+import { useUser } from "@/contexts/authContext"; // To check if logged in
+import { createComplaint } from "@/services/complaintService"; // New service
 
 interface ComplaintFormProps {
-  onComplaintSubmitted: () => void;
+  canteenId: string; // Passed from the page
 }
 
-const ComplaintForm: React.FC<ComplaintFormProps> = ({
-  onComplaintSubmitted,
-}) => {
-  const [formData, setFormData] = useState({
-    category: "",
-    subject: "",
-    description: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const ComplaintForm: React.FC<ComplaintFormProps> = ({ canteenId }) => {
+  const { user, loading: authLoading } = useUser();
+
+  // Form state
+  const [complaintType, setComplaintType] = useState("Food Quality");
+  const [description, setDescription] = useState("");
+
+  // UI state
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    if (!user) {
+      setError("Please log in to submit a complaint.");
+      return;
+    }
+
+    setLoading(true);
     setError(null);
+    setSuccess(null);
 
     try {
-      // Assuming your API expects a `title` and `description`
-      await createComplaint({
-        title: `[${formData.category}] ${formData.subject}`,
-        description: formData.description,
-      });
-      onComplaintSubmitted(); // Refresh the list
-      setFormData({ category: "", subject: "", description: "" }); // Reset form
-    } catch (err) {
-      setError("Failed to submit complaint. Please try again.");
-      console.error(err);
+      const data = {
+        canteenId: parseInt(canteenId),
+        title: complaintType,
+        description,
+      };
+
+      const responseMessage = await createComplaint(data);
+      setSuccess(responseMessage || "Complaint submitted successfully!");
+
+      // Reset form
+      setComplaintType("Food Quality");
+      setDescription("");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
-  return (
-    // 'sticky top-24' makes the form stay in view on scroll
-    <div className="card bg-white shadow-xl w-full sticky top-24">
-      <div className="card-body">
-        <h2 className="card-title text-2xl">Lodge a New Complaint</h2>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          {/* Category */}
-          <label className="input input-bordered flex items-center gap-2">
-            <ListChecks className="text-base-content/50" size={20} />
-            <select
-              name="category"
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-              className="grow bg-transparent"
-              required
-            >
-              <option value="" disabled>
-                Select Category...
-              </option>
-              <option>Food Quality</option>
-              <option>Service</option>
-              <option>Cleanliness</option>
-              <option>Other</option>
-            </select>
-          </label>
+  if (authLoading) {
+    return <span className="loading loading-sm loading-spinner"></span>;
+  }
 
-          {/* Subject */}
-          <label className="input input-bordered flex items-center gap-2">
-            <Type className="text-base-content/50" size={20} />
-            <input
-              type="text"
-              name="subject"
-              value={formData.subject}
-              onChange={(e) =>
-                setFormData({ ...formData, subject: e.target.value })
-              }
-              className="grow bg-transparent"
-              placeholder="Subject"
-              required
-            />
-          </label>
-
-          {/* Description */}
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            className="textarea textarea-bordered h-32"
-            placeholder="Please describe the issue in detail..."
-            required
-          ></textarea>
-
-          {error && <div className="text-error text-sm">{error}</div>}
-
-          <div className="card-actions">
-            <button
-              type="submit"
-              className="btn btn-accent w-full text-white"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <span className="loading loading-spinner"></span>
-              ) : (
-                "Submit Complaint"
-              )}
-              {!isSubmitting && <Send size={16} />}
-            </button>
-          </div>
-        </form>
+  if (!user) {
+    return (
+      <div className="alert alert-warning">
+        <p>You must be logged in to submit a complaint.</p>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Alert Messages */}
+      {error && <div className="alert alert-error">{error}</div>}
+      {success && <div className="alert alert-success">{success}</div>}
+
+      {/* Complaint Type */}
+      <div className="form-control">
+        <label className="label">
+          <span className="label-text">Complaint Type</span>
+        </label>
+        <select
+          className="select select-bordered w-full"
+          value={complaintType}
+          onChange={(e) => setComplaintType(e.target.value)}
+        >
+          <option>Food Quality</option>
+          <option>Hygiene</option>
+          <option>Staff Behavior</option>
+          <option>Timings</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      {/* Description */}
+      <div className="form-control">
+        <label className="label">
+          <span className="label-text">Description</span>
+        </label>
+        <textarea
+          className="textarea textarea-bordered h-24"
+          placeholder="Please provide details about your complaint..."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+        ></textarea>
+      </div>
+
+      {/* Submit Button */}
+      <div className="form-control mt-6">
+        <button type="submit" className="btn btn-primary" disabled={loading}>
+          {loading ? (
+            <span className="loading loading-spinner"></span>
+          ) : (
+            "Submit Complaint"
+          )}
+        </button>
+      </div>
+    </form>
   );
 };
 

@@ -3,14 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useUser } from "../../../contexts/authContext"; // Adjust path if needed
+import { useRouter } from "next/navigation";
 // import logo from "../../../../public/logo.png";
 
 const Login: React.FC = () => {
   // 1. Manage state for inputs and errors
-  const [email, setEmail] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  const router = useRouter();
   // 2. Get the login function from our context
   const { login } = useUser();
 
@@ -21,7 +22,10 @@ const Login: React.FC = () => {
 
     try {
       // Call the login function with user credentials
-      await login({ emailId: email, password });
+      await login({ studentId: studentId, password });
+      setTimeout(() => {
+        router.push("/");
+      }, 2000);
       // The context will handle redirection on success
     } catch (err: any) {
       console.error(err);
@@ -59,8 +63,8 @@ const Login: React.FC = () => {
                 id="email"
                 placeholder="example@dau.ac.in"
                 className="input input-bordered w-full"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
                 required
               />
             </div>

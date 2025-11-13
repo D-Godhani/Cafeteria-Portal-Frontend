@@ -3,6 +3,7 @@
 // --- INTERFACES ---
 
 interface ComplaintData {
+  
   title: string;
   description: string;
 }
@@ -63,7 +64,7 @@ export const getUserComplaints = async (): Promise<Complaint[]> => {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/complaints`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/complaints/mycomplaints`,
     {
       method: "GET",
       headers: {

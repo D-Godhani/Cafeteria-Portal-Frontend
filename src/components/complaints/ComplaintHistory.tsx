@@ -1,23 +1,21 @@
-// src/components/complaints/ComplaintHistory.tsx
 "use client";
 
-import React from "react";
-import { Clock, CheckCircle } from "lucide-react";
+// UPDATED: Import useState
+import React, { useState } from "react";
+import { AlertTriangle } from "lucide-react";
+// UPDATED: Import new shared types
+import { Complaint, ComplaintStatus } from "./ComplaintTypes";
+// UPDATED: Import the new modal
+import ComplaintDetailModal from "./ComplaintDetailModal";
 
-// Define the shape of a complaint object from your API
-interface Complaint {
-  id: string | number;
-  title: string;
-  status: "Pending" | "Resolved";
-  createdAt: string; // Or `date` depending on your API response
-}
-
+// Interface now uses imported types
 interface ComplaintHistoryProps {
   complaints: Complaint[];
   loading: boolean;
+  error: string | null;
 }
 
-// A sub-component for the sleek loading state
+// --- Helper Components (No changes) ---
 const HistorySkeleton = () => (
   <div className="space-y-8 animate-pulse">
     {[...Array(3)].map((_, i) => (
@@ -32,7 +30,6 @@ const HistorySkeleton = () => (
   </div>
 );
 
-// A sub-component for when there are no complaints
 const EmptyState = () => (
   <div className="text-center py-10">
     <h3 className="text-xl font-semibold">No Complaints Yet!</h3>
@@ -42,57 +39,117 @@ const EmptyState = () => (
   </div>
 );
 
+const ErrorState = ({ message }: { message: string }) => (
+  <div className="text-center py-10 flex flex-col items-center gap-4">
+    <AlertTriangle className="text-error" size={40} />
+    <h3 className="text-xl font-semibold">Something went wrong</h3>
+    <p className="text-base-content/60 mt-2">{message}</p>
+  </div>
+);
+
+// --- Main Component (Updated) ---
 const ComplaintHistory: React.FC<ComplaintHistoryProps> = ({
   complaints,
   loading,
+  error,
 }) => {
-  const getStatusIcon = (status: "Pending" | "Resolved") => {
-    if (status === "Resolved") {
-      return <CheckCircle className="text-success" />;
+  // NEW: State to manage the selected complaint for the modal
+  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(
+    null
+  );
+
+  // KEPT: Helper to get the correct DaisyUI badge class
+  const getStatusBadgeClass = (status: ComplaintStatus) => {
+    switch (status) {
+      case "PENDING":
+        return "badge-warning";
+      case "IN_PROGRESS":
+        return "badge-info";
+      case "RESOLVED":
+        return "badge-success";
+      case "ESCALATED":
+        return "badge-error";
+      default:
+        return "badge-ghost";
     }
-    return <Clock className="text-warning" />;
+  };
+
+  // KEPT: Helper to make status text look nice
+  const formatStatusText = (status: ComplaintStatus) => {
+    switch (status) {
+      case "PENDING":
+        return "Pending";
+      case "IN_PROGRESS":
+        return "In Progress";
+      case "RESOLVED":
+        return "Resolved";
+      case "ESCALATED":
+        return "Escalated";
+      default:
+        return status;
+    }
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return <HistorySkeleton />;
+    }
+    if (error) {
+      return <ErrorState message={error} />;
+    }
+    if (complaints.length === 0) {
+      return <EmptyState />;
+    }
+
+    return (
+      <div className="overflow-x-auto">
+        <table className="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Date Filed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {complaints.map((complaint) => (
+              // UPDATED: Moved key prop to the same line as <tr>
+              <tr
+                key={complaint.id}
+                className="cursor-pointer hover:bg-base-200"
+                onClick={() => setSelectedComplaint(complaint)}
+              >
+                <td>
+                  <div className="font-bold">{complaint.title}</div>
+                </td>
+                <td>
+                  <span
+                    className={`badge ${getStatusBadgeClass(complaint.status)}`}
+                  >
+                    {formatStatusText(complaint.status)}
+                  </span>
+                </td>
+                <td>{new Date(complaint.createdAt).toLocaleDateString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
   return (
-    <div className="card bg-white shadow-xl">
+    <div className="card bg-base-100 shadow-xl">
       <div className="card-body">
         <h2 className="card-title text-2xl mb-6">Your Complaint History</h2>
-        {loading ? (
-          <HistorySkeleton />
-        ) : complaints.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <ul className="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
-            {complaints.map((complaint, index) => (
-              <li key={complaint.id}>
-                <div className="timeline-middle mx-2">
-                  {getStatusIcon(complaint.status)}
-                </div>
-                <div
-                  className={`timeline-${
-                    index % 2 === 0 ? "start" : "end"
-                  } md:text-end mb-10 p-4 bg-base-100 rounded-lg shadow`}
-                >
-                  <time className="font-mono italic text-sm text-base-content/60">
-                    {new Date(complaint.createdAt).toLocaleDateString()}
-                  </time>
-                  <div className="text-lg font-bold">{complaint.title}</div>
-                  <div
-                    className={`badge mt-1 ${
-                      complaint.status === "Resolved"
-                        ? "badge-success"
-                        : "badge-warning"
-                    }`}
-                  >
-                    {complaint.status}
-                  </div>
-                </div>
-                {index < complaints.length - 1 && <hr />}
-              </li>
-            ))}
-          </ul>
-        )}
+        {renderContent()}
       </div>
+
+      {/* NEW: Render the modal */}
+      <ComplaintDetailModal
+        complaint={selectedComplaint}
+        onClose={() => setSelectedComplaint(null)}
+      />
     </div>
   );
 };

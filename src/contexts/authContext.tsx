@@ -1,6 +1,6 @@
 "use client";
 
-import { loginUser, registerUser } from "@/services/authService";
+import { loginUser, registerUser } from "../services/authService";
 import {
   createContext,
   useEffect,
@@ -8,12 +8,19 @@ import {
   useState,
   ReactNode,
 } from "react";
+// 1. Import jwt-decode
+import { jwtDecode } from "jwt-decode";
 
+// This interface is good. It matches your user data.
 interface User {
   studentId: string;
-  name: string;
-  emailId: string;
-  mobileNumber: string;
+  role: "USER" | "ADMIN";
+}
+
+// NEW: Define the shape of the token's payload (we only need 'exp')
+interface DecodedToken {
+  exp: number; // 'expires at' timestamp
+  // ...it probably has other fields like 'sub' and 'role', but we only need 'exp'
 }
 
 interface UserContextType {
@@ -33,33 +40,57 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 2. UPDATED useEffect to check token expiration
   useEffect(() => {
-    const checkSession = async () => {
+    const checkSession = () => {
       const token = localStorage.getItem("token");
-      const storeUser = localStorage.getItem("user");
+      const storedUser = localStorage.getItem("user");
 
-      if (token && storeUser) {
-        setUser(JSON.parse(storeUser));
+      if (token && storedUser && storedUser !== "undefined") {
+        try {
+          // Decode the token to check its expiration
+          const decoded = jwtDecode<DecodedToken>(token);
+
+          // Check if token is expired (exp is in seconds, Date.now() is in ms)
+          if (decoded.exp * 1000 > Date.now()) {
+            // Token is valid, set the user
+            setUser(JSON.parse(storedUser));
+          } else {
+            // Token is expired, log the user out
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+          }
+        } catch (error) {
+          console.error("Failed to parse token or user", error);
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+        }
       }
-
-      // profile logic will be added later
-
       setLoading(false);
     };
     checkSession();
   }, []);
 
+  // Your login function is good
   const login = async (credentials: object) => {
-    const { user, token } = await loginUser(credentials);
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    setUser(user);
+    const { token, studentId, role } = await loginUser(credentials);
+    const user: User = { studentId, role };
+
+    if (user && token) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      setUser(user);
+    } else {
+      throw new Error("Login successful but no user data received.");
+    }
   };
 
+  // Your register function is good
   const register = async (userData: object) => {
     return registerUser(userData);
   };
 
+  // Your logout function is good
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -77,11 +108,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+// Your useUser hook is good
 export const useUser = () => {
   const context = useContext(UserContext);
   if (context === undefined) {
     throw new Error("useUser must be used within a UserProvider");
   }
-
   return context;
 };

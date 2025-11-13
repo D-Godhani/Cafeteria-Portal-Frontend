@@ -1,13 +1,29 @@
-// src/components/navbar/navbar.tsx
 "use client";
 
 import Link from "next/link";
 import React from "react";
 import { useUser } from "@/contexts/authContext";
 import { Power, LogIn, UserPlus } from "lucide-react";
+// NEW: Import for redirection
+import { useRouter } from "next/navigation";
 
 const Navbar: React.FC = () => {
-  const { isAuthenticated, user, logout, loading } = useUser();
+  // UPDATED: Destructure the 'logout' function from the context
+  const { isAuthenticated, user, loading, logout } = useUser();
+  // NEW: Get router instance
+  const router = useRouter();
+
+  // UPDATED: Implement the local logout helper
+  const handleLogout = async () => {
+    try {
+      await logout(); // Call the logout function from the context
+      // UPDATED: Use router.replace() to prevent going back
+      router.replace("/"); // Redirect to home page on successful logout
+    } catch (error) {
+      console.error("Failed to logout:", error);
+      // Optionally, show an error message to the user here
+    }
+  };
 
   return (
     // A clean white background with a shadow to "float" above the page
@@ -32,29 +48,23 @@ const Navbar: React.FC = () => {
           </div>
         ) : (
           <ul className="menu menu-horizontal items-center space-x-2 px-1">
-            {isAuthenticated || true ? (
+            {isAuthenticated ? (
               // --- USER IS LOGGED IN ---
               <>
                 <li className="hidden sm:block">
                   <span className="font-semibold text-base-content/70">
-                    Welcome, {user?.name || "Student"}
+                    Welcome, {user?.studentId}
                   </span>
                 </li>
-                <li>
-                  <Link href="/complaints">Complaints</Link>
-                </li>
-                <li>
-                  <Link href="/feedback">Feedback</Link>
-                </li>
-                <li>
-                  <button
-                    onClick={logout}
-                    title="Logout"
-                    className="btn btn-secondary btn-sm btn-circle text-white"
-                  >
-                    <Power size={16} />
-                  </button>
-                </li>
+
+                <button
+                  // UPDATED: Call the new local helper function
+                  onClick={handleLogout}
+                  title="Logout"
+                  className="btn btn-secondary btn-sm btn-circle text-white"
+                >
+                  <Power size={16} />
+                </button>
               </>
             ) : (
               // --- USER IS LOGGED OUT ---

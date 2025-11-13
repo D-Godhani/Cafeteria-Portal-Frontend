@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     // Set the default theme for the entire application here
-    <html lang="en" data-theme="studenthub">
+    <html lang="en" data-theme="studenthub" suppressHydrationWarning={true}>
       <body className={inter.className}>
         <UserProvider>{children}</UserProvider>
       </body>

@@ -1,38 +1,55 @@
+// This is the new service file that calls your backend.
+
+// This is your Spring Boot backend URL
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+
+/**
+ * The data structure returned from your backend's /auth/login endpoint.
+ */
 interface AuthResponse {
-  user: {
-    studentId: string;
-    name: string;
-    emailId: string;
-    mobileNumber: string;
-  };
   token: string;
+  studentId: string;
+  role: "USER" | "ADMIN";
 }
 
+/**
+ * Calls your backend /auth/login endpoint.
+ * @param credentials - { emailId (or studentId), password }
+ * @returns The { token, studentId, role } object
+ */
 export const loginUser = async (credentials: object): Promise<AuthResponse> => {
-  const response = await fetch(`${process.env.API_BASE_URL}/auth/login`, {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(credentials),
   });
 
   if (!response.ok) {
-    throw new Error("Login failed. Please check your credentials.");
+    const errorText = await response.text();
+    throw new Error(
+      errorText || "Login failed. Please check your credentials."
+    );
   }
 
   return response.json();
 };
 
+/**
+ * Calls your backend /auth/register endpoint.
+ * @param userData - The user object for registration
+ */
 export const registerUser = async (userData: object) => {
-  const response = await fetch(`${process.env.API_BASE_URL}/auth/register`, {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Registration Failed");
+    const errorText = await response.text();
+    throw new Error(errorText || "Registration Failed");
   }
 
-  return response.json();
+  return response.text(); // Your backend returns a string
 };
