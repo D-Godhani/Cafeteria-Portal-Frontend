@@ -5,11 +5,7 @@ import { useUser } from "@/contexts/authContext";
 import Navbar from "@/components/navbar/navbar";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Fascinate } from "next/font/google";
-import { tree } from "next/dist/build/templates/app-page";
-
-// This layout component will wrap all pages inside the (admin) group.
-// It acts as a gatekeeper to protect admin routes.
+import Error from "next/error";
 
 export default function AdminLayout({
   children,
@@ -33,10 +29,10 @@ export default function AdminLayout({
 
     // 2. If authenticated but not an ADMIN, redirect to homepage
     // This is the crucial role-based access control check
-    // if (user?.role !== "ADMIN") {
-    //   router.push("/"); // Or you could show a "/unauthorized" page
-    //   return;
-    // }
+    if (user?.role !== "ROLE_ADMIN") {
+      router.push("/"); // Or you could show a "/unauthorized" page
+      return;
+    }
 
     // 3. If authenticated AND an ADMIN, they can stay
   }, [isAuthenticated, user, loading, router]);
@@ -53,7 +49,7 @@ export default function AdminLayout({
   // If user is authenticated and is an Admin, show the admin page.
   // We also check 'isAuthenticated' and 'user?.role' again as a final check
   // to prevent a flash of content before the useEffect redirect can happen.
-  if (isAuthenticated /* && user?.role === "ADMIN" */) {
+  if (isAuthenticated && user?.role === "ROLE_ADMIN") {
     return (
       <div className="flex flex-col min-h-screen">
         <Navbar />

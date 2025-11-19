@@ -19,7 +19,7 @@ const CanteenCard: React.FC<CanteenCardProps> = ({ canteen }) => {
     >
       <figure className="h-48 relative">
         <Image
-          src={canteen.imageUrl || "/placeholder-image.jpg"} // Add a fallback image
+          src={canteen.imageUrl} // Add a fallback image
           alt={canteen.canteenName}
           layout="fill"
           objectFit="cover"

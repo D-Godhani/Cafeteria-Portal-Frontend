@@ -12,6 +12,8 @@ export interface Canteen {
   imageUrl: string;
 }
 
+type ID = number | string;
+
 /**
  * Fetches all public canteens.
  * This endpoint is assumed to be public (no auth).
@@ -30,3 +32,13 @@ export const getPublicCanteens = async (): Promise<Canteen[]> => {
 };
 
 // You can add other public functions here, e.g., getCanteenById
+export const getPublicCanteenById = async (id: ID): Promise<Canteen> => {
+  const response = await fetch(`${API_BASE_URL}/api/canteens/${id}`, {
+    method: "GET",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch public canteen details.");
+  }
+  return response.json();
+};

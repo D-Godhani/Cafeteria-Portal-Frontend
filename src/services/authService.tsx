@@ -10,7 +10,7 @@ const API_BASE_URL =
 interface AuthResponse {
   token: string;
   studentId: string;
-  role: "USER" | "ADMIN";
+  role: "ROLE_USER" | "ROLE_ADMIN";
 }
 
 /**

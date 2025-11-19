@@ -3,7 +3,7 @@
 "use client"; // Required for using new Date() on the client
 
 import React from "react";
-import { Clock, Megaphone, Phone, Mail } from "lucide-react";
+import { Clock, Megaphone, Phone, Mail, SquareMenu } from "lucide-react";
 
 const InfoSection: React.FC = () => {
   // --- Dynamic Time Logic ---
@@ -19,7 +19,7 @@ const InfoSection: React.FC = () => {
     <section className="pt-12 pb-16 bg-base-100">
       <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content Area (Left Side) */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-1 space-y-8">
           {/* Operating Hours Card */}
           <div className="card bg-white shadow-lg">
             <div className="card-body">
@@ -104,6 +104,18 @@ const InfoSection: React.FC = () => {
                   <span>Menu for **tomorrow** (Diwali) is now available.</span>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-1">
+          <div className="card bg-white shadow-lg sticky top-24">
+            <div className="card-body">
+              <h2 className="card-title text-2xl">
+                <SquareMenu className="text-primary" />
+                Menu
+              </h2>
+              
             </div>
           </div>
         </div>

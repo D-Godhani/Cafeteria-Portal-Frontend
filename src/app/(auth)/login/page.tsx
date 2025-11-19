@@ -1,32 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useUser } from "../../../contexts/authContext"; // Adjust path if needed
+// UPDATED: Pointing to the correct context file we created
+import { useUser } from "../../../contexts/authContext";
 import { useRouter } from "next/navigation";
 // import logo from "../../../../public/logo.png";
 
 const Login: React.FC = () => {
   // 1. Manage state for inputs and errors
+  const [role, setRole] = useState("ROLE_USER");
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  // 2. Get the login function from our context
-  const { login } = useUser();
 
-  // 3. Handle the form submission
+  // 2. Get the login function and user state from our context
+  // We need 'user' here to check the role for redirection
+  const { login, user } = useUser();
+
+  // UPDATED: 3. Handle Redirection based on Role
+  useEffect(() => {
+    // If user is logged in (context has user data), redirect immediately
+    if (user) {
+      if (user.role === "ROLE_ADMIN") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/");
+      }
+    }
+  }, [user, router]);
+
+  // 4. Handle the form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); // Clear previous errors
 
     try {
       // Call the login function with user credentials
+      // The context will update 'user', triggering the useEffect above
       await login({ studentId: studentId, password });
-      setTimeout(() => {
-        router.push("/");
-      }, 2000);
-      // The context will handle redirection on success
     } catch (err: any) {
       console.error(err);
       setError(err.message || "An error occurred during login.");

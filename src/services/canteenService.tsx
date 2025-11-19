@@ -1,10 +1,13 @@
 // /src/services/canteenService.ts
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "http://localhost:8080/admin/canteens";
+// 1. Define the Root URL (e.g., http://localhost:8080)
+const SERVER_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
-// --- Types (Co-locating them here is good practice) ---
+// 2. Define the specific Endpoint (e.g., http://localhost:8080/admin/canteens)
+const CANTEEN_ENDPOINT = `${SERVER_URL}/admin/canteens`;
+
+// --- Types ---
 export interface Canteen {
   id: number;
   canteenName: string;
@@ -16,12 +19,10 @@ export interface Canteen {
 export type CanteenFormData = Omit<Canteen, "id">;
 
 // --- Helper: Get Auth Header ---
-/**
- * Gets the Authorization header with the token.
- * @param includeContentType - Whether to include 'Content-Type: application/json'
- */
 const getAuthHeader = (includeContentType = true) => {
   const token = localStorage.getItem("token");
+  // Note: We strictly require a token here.
+  // If 403 persists after fixing the URL, check if the user has 'ADMIN' role in the token.
   if (!token) {
     throw new Error("No authentication token found. Please log in.");
   }
@@ -37,18 +38,13 @@ const getAuthHeader = (includeContentType = true) => {
 };
 
 // --- Helper: Handle API Responses ---
-/**
- * A generic response handler.
- * Throws an error for 401/403 or non-ok responses.
- * Tries to parse JSON, falls back to text.
- */
 const handleResponse = async (response: Response) => {
   if (response.status === 401 || response.status === 403) {
-    // Let the UI component handle the logout logic
-    throw new Error("Unauthorized or Forbidden. Please log in again.");
+    throw new Error(
+      "Unauthorized or Forbidden. Ensure you are logged in as an Admin."
+    );
   }
 
-  // Get text first, as your backend returns strings for success
   const responseText = await response.text();
 
   if (!response.ok) {
@@ -56,35 +52,26 @@ const handleResponse = async (response: Response) => {
   }
 
   try {
-    // Try to parse as JSON (for GET list)
     return JSON.parse(responseText);
   } catch (e) {
-    // Not JSON, return the plain text (for POST, PUT, DELETE success messages)
     return responseText;
   }
 };
 
 // --- API Functions ---
 
-/**
- * Fetches all canteens
- * @returns A promise that resolves to an array of Canteen objects
- */
-export const getAllCanteens = async (): Promise<Canteen[]> => {
-  const response = await fetch(API_BASE_URL, {
-    method: "GET",
-    headers: getAuthHeader(false), // No 'Content-Type' needed for GET
-  });
-  return handleResponse(response);
-};
+// export const getAllCanteens = async (): Promise<Canteen[]> => {
+//   // Uses CANTEEN_ENDPOINT correctly
+//   const response = await fetch(CANTEEN_ENDPOINT, {
+//     method: "GET",
+//     headers: getAuthHeader(false),
+//   });
+//   return handleResponse(response);
+// };
 
-/**
- * Adds a new canteen
- * @param data - The data for the new canteen
- * @returns A promise that resolves to the success message (string)
- */
 export const addCanteen = async (data: CanteenFormData): Promise<string> => {
-  const response = await fetch(API_BASE_URL, {
+  // Uses CANTEEN_ENDPOINT correctly
+  const response = await fetch(CANTEEN_ENDPOINT, {
     method: "POST",
     headers: getAuthHeader(true),
     body: JSON.stringify(data),
@@ -92,17 +79,11 @@ export const addCanteen = async (data: CanteenFormData): Promise<string> => {
   return handleResponse(response);
 };
 
-/**
- * Updates an existing canteen
- * @param id - The ID of the canteen to update
- * @param data - The new data for the canteen
- * @returns A promise that resolves to the success message (string)
- */
 export const updateCanteen = async (
   id: number,
   data: CanteenFormData
 ): Promise<string> => {
-  const response = await fetch(`${API_BASE_URL}/${id}`, {
+  const response = await fetch(`${CANTEEN_ENDPOINT}/${id}`, {
     method: "PUT",
     headers: getAuthHeader(true),
     body: JSON.stringify(data),
@@ -110,15 +91,10 @@ export const updateCanteen = async (
   return handleResponse(response);
 };
 
-/**
- * Deletes a canteen
- * @param id - The ID of the canteen to delete
- * @returns A promise that resolves to the success message (string)
- */
 export const deleteCanteen = async (id: number): Promise<string> => {
-  const response = await fetch(`${API_BASE_URL}/${id}`, {
+  const response = await fetch(`${CANTEEN_ENDPOINT}/${id}`, {
     method: "DELETE",
-    headers: getAuthHeader(false), // No 'Content-Type' or body needed
+    headers: getAuthHeader(false),
   });
   return handleResponse(response);
 };

@@ -14,7 +14,7 @@ import { jwtDecode } from "jwt-decode";
 // This interface is good. It matches your user data.
 interface User {
   studentId: string;
-  role: "USER" | "ADMIN";
+  role: "ROLE_USER" | "ROLE_ADMIN";
 }
 
 // NEW: Define the shape of the token's payload (we only need 'exp')
@@ -71,7 +71,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     checkSession();
   }, []);
 
-  // Your login function is good
   const login = async (credentials: object) => {
     const { token, studentId, role } = await loginUser(credentials);
     const user: User = { studentId, role };
