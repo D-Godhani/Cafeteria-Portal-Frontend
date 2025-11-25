@@ -1,111 +1,69 @@
-// src/services/complaintService.ts
+import axios from "axios";
+
+// Base URL (Matches your other services)
+const BASE_URL = "http://localhost:8080";
+
+// Helper for Auth Header
+const getAuthHeader = () => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    return { headers: { Authorization: `Bearer ${token}` } };
+  }
+  return { headers: {} };
+};
 
 // --- INTERFACES ---
 
-interface ComplaintData {
-  
+export interface ComplaintRequest {
+  canteenId: string | number; // ✅ Added this
   title: string;
   description: string;
 }
 
-interface Complaint {
-  id: number;
+export interface Complaint {
+  complainId: number; // ✅ Matches backend
+  canteenId: number;
+  canteenName?: string;
   title: string;
-  status: "Pending" | "Resolved";
+  description: string;
+  complaintStatus: "PENDING" | "RESOLVED"; // ✅ Matches backend
   createdAt: string;
-  // Add any other fields your API returns for a complaint
 }
 
 // --- API FUNCTIONS ---
 
 /**
- * Creates a new complaint by sending a POST request to the backend.
- * @param complaintData - The complaint details { title, description }.
- * @returns The server's response.
+ * Creates a new complaint
  */
-export const createComplaint = async (complaintData: ComplaintData) => {
-  // 1. Get the token from localStorage
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("Authentication Error: No token found.");
-  }
-
-  // 2. Make the real API call
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/complaints`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // 3. Add the Authorization header
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(complaintData),
-    }
+export const createComplaint = async (data: ComplaintRequest) => {
+  const response = await axios.post(
+    `${BASE_URL}/user/complaints`,
+    data,
+    getAuthHeader()
   );
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to create complaint.");
-  }
-
-  return response.json();
+  return response.data;
 };
 
 /**
- * Fetches the current user's past complaints from the backend.
- * @returns A promise that resolves with an array of complaint objects.
+ * Fetches the current user's past complaints
  */
-export const getUserComplaints = async (): Promise<Complaint[]> => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    console.warn("No token found, returning empty complaints list.");
-    return []; // Return empty array if not authenticated
-  }
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/complaints/mycomplaints`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+export const getMyComplaints = async (): Promise<Complaint[]> => {
+  const response = await axios.get(
+    `${BASE_URL}/user/complaints/mycomplaints`,
+    getAuthHeader()
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch complaints.");
-  }
-
-  return response.json();
+  return response.data;
 };
 
 /**
- * Fetches the details of a single complaint by its ID.
- * @param complaintId - The ID of the complaint to fetch.
- * @returns A promise that resolves with the detailed complaint object.
+ * Fetches a single complaint details (Optional, if needed)
  */
-export const getComplaintDetails = async (
-  complaintId: string | number
+export const getComplaintById = async (
+  id: number | string
 ): Promise<Complaint> => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("Authentication Error: No token found.");
-  }
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/complaints/${complaintId}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+  const response = await axios.get(
+    `${BASE_URL}/user/complaint/${id}`,
+    getAuthHeader()
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch complaint details.");
-  }
-
-  return response.json();
+  return response.data;
 };

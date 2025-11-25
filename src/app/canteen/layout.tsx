@@ -11,6 +11,7 @@ export default function CanteensLayout({
   return (
     <div className="flex flex-col min-h-screen bg-base-100">
       {/* Main content area (where page.tsx or not-found.tsx renders) */}
+      <Navbar />
       <main className="flex-grow">{children}</main>
 
       {/* Shared Footer for this section */}

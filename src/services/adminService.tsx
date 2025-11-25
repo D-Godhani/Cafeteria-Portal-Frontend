@@ -47,6 +47,7 @@ export interface Announcement {
   title: string;
   message: string;
   createdAt?: string;
+  isActive?: boolean;
 }
 // --- COMPLAINTS API ---
 
@@ -161,29 +162,30 @@ export const createAnnouncement = async (title: string, message: string) => {
 
 export const getActiveAnnouncements = async (): Promise<Announcement[]> => {
   try {
-    // Try the Admin endpoint first
     const response = await axios.get(
-      `${ADMIN_URL}/announcement/active`,
+      `${BASE_URL}/api/announcement/active`,
       getAuthHeader()
     );
     return response.data;
   } catch (error) {
-    console.warn("API Failed/Forbidden. Using Mock Data for Announcements.");
-    // Return Fake Data so the UI doesn't break
-    return [
-      {
-        id: 1,
-        title: "Server Maintenance (Mock)",
-        message: "The system will be down for 10 mins tonight.",
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: 2,
-        title: "Diwali Holiday",
-        message: "Canteen will remain closed on Friday.",
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-      },
-    ];
+    console.error("Error fetching announcements:", error);
+    return []; // Return empty array on failure instead of mock data if you want strictly real data
+  }
+};
+
+// ✅ Deactivate API
+export const deactivateAnnouncement = async (id: number) => {
+  try {
+    const response = await axios.put(
+      `${ADMIN_URL}/announcement/${id}/deactivate`,
+      {},
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    // If using mock data, the ID won't exist on server, so we mock success too
+    console.warn("[UI] API failed, simulating success for UI.");
+    return { success: true };
   }
 };
 

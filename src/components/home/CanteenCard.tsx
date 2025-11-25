@@ -5,7 +5,8 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Canteen } from "@/services/publicService"; // Import type
-
+const PLACEHOLDER_SVG =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBmaWxsPSIjZTU1ZWRlIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiAvPjwvc3ZnPg==";
 interface CanteenCardProps {
   canteen: Canteen;
 }
@@ -19,11 +20,14 @@ const CanteenCard: React.FC<CanteenCardProps> = ({ canteen }) => {
     >
       <figure className="h-48 relative">
         <Image
-          src={canteen.imageUrl} // Add a fallback image
+          src={canteen.imageUrl || "https://via.placeholder.com/400x300"} // Fallback if url is missing
           alt={canteen.canteenName}
-          layout="fill"
-          objectFit="cover"
-          priority // Prioritize loading images in the carousel
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority
+          placeholder="blur"
+          blurDataURL={PLACEHOLDER_SVG}
         />
       </figure>
       <div className="card-body">
@@ -32,7 +36,9 @@ const CanteenCard: React.FC<CanteenCardProps> = ({ canteen }) => {
           {canteen.info}
         </p>
         <div className="card-actions justify-end mt-2">
-          <span className="btn btn-primary btn-sm">View Details</span>
+          <span className="btn btn-primary rounded-lg btn-sm">
+            View Details
+          </span>
         </div>
       </div>
     </Link>

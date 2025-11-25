@@ -5,8 +5,24 @@ import { useParams, useRouter, notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
+// Icons
+import {
+  ArrowLeft,
+  Info,
+  MessageSquarePlus,
+  History,
+  ShieldCheck,
+  MapPin,
+  Clock,
+  Store,
+} from "lucide-react";
+
 // Relative imports
 import { getPublicCanteenById, Canteen } from "../../../services/publicService";
+
+// Placeholder for Image Blur
+const PLACEHOLDER_SVG =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBmaWxsPSIjZTU1ZWRlIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiAvPjwvc3ZnPg==";
 
 export default function CanteenDetailPage() {
   const params = useParams();
@@ -19,7 +35,6 @@ export default function CanteenDetailPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Only fetch canteen details now
         const canteenData = await getPublicCanteenById(id);
         setCanteen(canteenData);
       } catch (err) {
@@ -34,8 +49,8 @@ export default function CanteenDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <span className="loading loading-lg loading-spinner text-primary"></span>
+      <div className="flex items-center justify-center min-h-screen bg-base-200/30">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
   }
@@ -43,181 +58,172 @@ export default function CanteenDetailPage() {
   if (!canteen) return null;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Breadcrumbs / Back Button */}
-      <button
-        onClick={() => router.back()}
-        className="btn btn-ghost btn-sm mb-6 gap-2 pl-0 hover:bg-transparent text-base-content/60"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-4 h-4"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-          />
-        </svg>
-        Back to Canteens
-      </button>
-
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* --- Sidebar Navigation --- */}
-        <aside className="w-full lg:w-64 flex-shrink-0">
-          <div className="card bg-base-100 shadow-lg border border-base-200 sticky top-24">
-            <div className="card-body p-4">
-              <h3 className="font-bold text-lg mb-4 px-2">Navigation</h3>
-              <ul className="menu bg-base-100 w-full p-0 gap-2">
-                <li>
-                  <a className="active font-medium">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
-                      />
-                    </svg>
-                    Canteen Details
-                  </a>
-                </li>
-                <li>
-                  <Link
-                    href={`/canteens/${id}/complaint`}
-                    className="font-medium"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                      />
-                    </svg>
-                    File a Complaint
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href={`/canteens/${id}/complaints-history`}
-                    className="font-medium"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    My Complaints History
-                  </Link>
-                </li>
-              </ul>
-            </div>
+    <div className="min-h-screen bg-base-200/30">
+      {/* Changed 'container max-w-6xl' to 'w-full' for full-screen width */}
+      <div className="w-full p-4 md:p-8">
+        {/* --- HEADER --- */}
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => router.back()}
+            className="btn btn-circle btn-ghost hover:bg-base-300"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <Store className="w-8 h-8 text-primary" />
+              Canteen Profile
+            </h1>
+            <p className="text-base-content/70">
+              View details, certifications, and menu.
+            </p>
           </div>
-        </aside>
+        </div>
 
-        {/* --- Main Content: Canteen Details --- */}
-        <div className="flex-grow">
-          <div className="card bg-base-100 shadow-xl border border-base-200 overflow-hidden">
-            {/* Hero Image */}
-            <figure className="relative h-64 md:h-96 w-full">
-              <Image
-                src={canteen.imageUrl || "https://via.placeholder.com/1200x600"}
-                alt={canteen.canteenName}
-                fill
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-base-100 to-transparent opacity-60"></div>
-              <div className="absolute bottom-0 left-0 p-6 md:p-8">
-                <h1 className="text-4xl md:text-5xl font-bold text-base-content drop-shadow-sm">
-                  {canteen.canteenName}
-                </h1>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* --- SIDEBAR NAVIGATION --- */}
+          <aside className="w-full lg:w-72 flex-shrink-0">
+            <div className="card bg-base-100 shadow-lg border border-base-200 sticky top-6 overflow-hidden">
+              <div className="bg-base-200/50 p-4 border-b border-base-200">
+                <h3 className="font-bold text-lg">Actions</h3>
               </div>
-            </figure>
-
-            <div className="card-body p-6 md:p-10">
-              {/* Status Badges */}
-              <div className="flex flex-wrap gap-3 mb-6">
-                <div className="badge badge-success gap-2 p-3">
-                  <div className="w-2 h-2 rounded-full bg-current"></div>
-                  Open Now
-                </div>
-                <div className="badge badge-ghost gap-2 p-3">
-                  ID: {canteen.id}
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="prose max-w-none">
-                <h3 className="text-2xl font-semibold mb-3">About Us</h3>
-                <p className="text-lg text-base-content/80 leading-relaxed">
-                  {canteen.info ||
-                    "Welcome to our canteen. We serve fresh and healthy meals for students and staff. Check out our daily specials and menu items!"}
-                </p>
-              </div>
-
-              <div className="divider my-8"></div>
-
-              {/* Certifications & Actions */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-base-200/50 p-6 rounded-box">
-                <div>
-                  <h4 className="font-bold text-lg">Safety & Standards</h4>
-                  <p className="text-sm text-base-content/60">
-                    We adhere to strict hygiene and food safety protocols.
-                  </p>
-                </div>
-                {canteen.fssaiCertificateUrl ? (
-                  <a
-                    href={canteen.fssaiCertificateUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-outline btn-primary gap-2"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
+              <div className="card-body p-2">
+                <ul className="menu w-full p-0 gap-1">
+                  <li>
+                    <a className="active font-medium bg-primary/10 text-primary hover:bg-primary/20 border-l-4 border-primary rounded-r-lg rounded-l-none">
+                      <Info className="w-5 h-5" />
+                      Canteen Details
+                    </a>
+                  </li>
+                  <li>
+                    <Link
+                      href={`/canteen/${id}/complaint`}
+                      className="font-medium hover:bg-base-200 border-l-4 border-transparent"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"
-                      />
-                    </svg>
-                    View FSSAI Certificate
-                  </a>
-                ) : (
-                  <div className="badge badge-neutral">Certificate Pending</div>
-                )}
+                      <MessageSquarePlus className="w-5 h-5" />
+                      File a Complaint
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href={`/canteen/${id}/complaints-history`}
+                      className="font-medium hover:bg-base-200 border-l-4 border-transparent"
+                    >
+                      <History className="w-5 h-5" />
+                      Complaint History
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </aside>
+
+          {/* --- MAIN CONTENT --- */}
+          <div className="flex-grow">
+            <div className="card bg-base-100 shadow-xl border border-base-200 overflow-hidden">
+              {/* Hero Image Section */}
+              <figure className="relative h-64 md:h-80 w-full bg-neutral">
+                <Image
+                  src={
+                    canteen.imageUrl || "https://via.placeholder.com/1200x600"
+                  }
+                  alt={canteen.canteenName}
+                  fill
+                  className="object-cover opacity-90"
+                  priority
+                  placeholder="blur"
+                  blurDataURL={PLACEHOLDER_SVG}
+                />
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+                {/* Title Overlay */}
+                <div className="absolute bottom-0 left-0 p-6 md:p-10 w-full">
+                  <div className="flex flex-wrap gap-3 mb-3">
+                    <div className="badge badge-success gap-1.5 border-none text-white shadow-sm">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                      Open Now
+                    </div>
+                    <div className="badge badge-outline text-white/80 border-white/40">
+                      ID: {canteen.id}
+                    </div>
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg tracking-tight">
+                    {canteen.canteenName}
+                  </h1>
+                </div>
+              </figure>
+
+              <div className="card-body p-6 md:p-10">
+                {/* Info Grid */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                  {/* Left: Description */}
+                  <div className="prose max-w-none">
+                    <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-base-content">
+                      <Info className="w-5 h-5 text-primary" />
+                      About this Canteen
+                    </h3>
+                    <p className="text-base-content/70 leading-relaxed text-lg">
+                      {canteen.info ||
+                        "Welcome to our canteen. We serve fresh and healthy meals for students and staff. Check out our daily specials and menu items!"}
+                    </p>
+
+                    <div className="flex flex-col gap-3 mt-6 text-sm text-base-content/60 bg-base-200/40 p-4 rounded-lg border border-base-200">
+                      <div className="flex items-center gap-3">
+                        <MapPin className="w-4 h-4 text-primary" />
+                        <span className="font-medium">
+                          Campus Main Block, Ground Floor
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <span className="font-medium">
+                          08:00 AM - 10:00 PM (Mon-Sat)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Safety Card */}
+                  <div className="flex flex-col gap-4">
+                    <div className="card bg-base-200/50 border border-base-200 p-6 rounded-2xl">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-green-100 text-green-700 rounded-xl shadow-sm">
+                          <ShieldCheck className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-lg">
+                            Safety & Hygiene
+                          </h4>
+                          <p className="text-sm text-base-content/60 mt-1 leading-relaxed">
+                            This establishment adheres to strict food safety
+                            protocols and regular hygiene audits.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="divider my-4"></div>
+
+                      <div className="flex justify-end">
+                        {canteen.fssaiCertificateUrl ? (
+                          <a
+                            href={canteen.fssaiCertificateUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-sm btn-outline btn-success gap-2 w-full sm:w-auto"
+                          >
+                            <ShieldCheck className="w-4 h-4" />
+                            View FSSAI Certificate
+                          </a>
+                        ) : (
+                          <div className="badge badge-ghost opacity-50 p-3 h-8">
+                            Certificate Pending
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -1,6 +1,11 @@
 "use client";
 
-import { loginUser, registerUser } from "../services/authService";
+import {
+  loginUser,
+  registerUser,
+  sendOtp, // ✅ Import
+  verifyOtp, // ✅ Import
+} from "../services/authService";
 import {
   createContext,
   useEffect,
@@ -8,21 +13,18 @@ import {
   useState,
   ReactNode,
 } from "react";
-// 1. Import jwt-decode
 import { jwtDecode } from "jwt-decode";
 
-// This interface is good. It matches your user data.
 interface User {
   studentId: string;
   role: "ROLE_USER" | "ROLE_ADMIN";
 }
 
-// NEW: Define the shape of the token's payload (we only need 'exp')
 interface DecodedToken {
-  exp: number; // 'expires at' timestamp
-  // ...it probably has other fields like 'sub' and 'role', but we only need 'exp'
+  exp: number;
 }
 
+// ✅ Update Interface to include OTP functions
 interface UserContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -30,6 +32,8 @@ interface UserContextType {
   login: (credentials: object) => Promise<void>;
   logout: () => void;
   register: (userData: object) => Promise<any>;
+  sendOtp: (email: string) => Promise<string>; // ✅ New
+  verifyOtp: (email: string, otp: string) => Promise<string>; // ✅ New
 }
 
 export const UserContext = createContext<UserContextType | undefined>(
@@ -40,7 +44,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 2. UPDATED useEffect to check token expiration
   useEffect(() => {
     const checkSession = () => {
       const token = localStorage.getItem("token");
@@ -48,15 +51,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
       if (token && storedUser && storedUser !== "undefined") {
         try {
-          // Decode the token to check its expiration
           const decoded = jwtDecode<DecodedToken>(token);
-
-          // Check if token is expired (exp is in seconds, Date.now() is in ms)
           if (decoded.exp * 1000 > Date.now()) {
-            // Token is valid, set the user
             setUser(JSON.parse(storedUser));
           } else {
-            // Token is expired, log the user out
             localStorage.removeItem("token");
             localStorage.removeItem("user");
           }
@@ -84,12 +82,20 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Your register function is good
   const register = async (userData: object) => {
     return registerUser(userData);
   };
 
-  // Your logout function is good
+  // ✅ Pass-through function for Sending OTP
+  const handleSendOtp = async (email: string) => {
+    return await sendOtp(email);
+  };
+
+  // ✅ Pass-through function for Verifying OTP
+  const handleVerifyOtp = async (email: string, otp: string) => {
+    return await verifyOtp(email, otp);
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -100,14 +106,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <UserContext.Provider
-      value={{ user, isAuthenticated, loading, login, logout, register }}
+      value={{
+        user,
+        isAuthenticated,
+        loading,
+        login,
+        logout,
+        register,
+        sendOtp: handleSendOtp, // ✅ Exposed
+        verifyOtp: handleVerifyOtp, // ✅ Exposed
+      }}
     >
       {!loading && children}
     </UserContext.Provider>
   );
 };
 
-// Your useUser hook is good
 export const useUser = () => {
   const context = useContext(UserContext);
   if (context === undefined) {

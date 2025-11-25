@@ -111,7 +111,7 @@ export default function AdminDashboardPage() {
               <div className="card-actions justify-end mt-auto">
                 <Link
                   href={module.href}
-                  className="btn btn-primary w-full sm:w-auto"
+                  className="btn btn-primary w-full rounded-lg sm:w-auto"
                 >
                   {module.btnText}
                 </Link>

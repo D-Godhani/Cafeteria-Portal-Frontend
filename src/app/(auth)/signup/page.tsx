@@ -3,13 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser } from "../../../contexts/authContext"; // Corrected path to context
+import { useUser } from "@/contexts/authContext"; // Corrected path
+import { Loader2, CheckCircle } from "lucide-react"; // Icons for status
 // import logo from "../../../../public/logo.png";
 
 const Signup: React.FC = () => {
   const router = useRouter();
-  const { register } = useUser();
+  // Destructure new OTP functions
+  const { register, sendOtp, verifyOtp } = useUser();
 
+  // --- Form State ---
   const [formData, setFormData] = useState({
     name: "",
     mobileNumber: "",
@@ -18,6 +21,15 @@ const Signup: React.FC = () => {
     password: "",
     confirmPassword: "",
   });
+
+  // --- OTP State ---
+  const [otp, setOtp] = useState("");
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpMessage, setOtpMessage] = useState("");
+
+  // --- UI Feedback State ---
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -25,10 +37,62 @@ const Signup: React.FC = () => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
+  // --- Step 1: Send OTP ---
+  const handleSendOtp = async () => {
+    if (!formData.emailId) {
+      setOtpMessage("Please enter an email first.");
+      return;
+    }
+
+    setError("");
+    setOtpMessage("");
+    setOtpLoading(true);
+
+    try {
+      // Service expects 'email', form has 'emailId'
+      await sendOtp(formData.emailId);
+      setIsOtpSent(true);
+      setOtpMessage("OTP sent to your email.");
+    } catch (err: any) {
+      setOtpMessage(err.message || "Failed to send OTP.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // --- Step 2: Verify OTP ---
+  const handleVerifyOtp = async () => {
+    if (!otp) {
+      setOtpMessage("Please enter the OTP.");
+      return;
+    }
+
+    setError("");
+    setOtpMessage("");
+    setOtpLoading(true);
+
+    try {
+      await verifyOtp(formData.emailId, otp);
+      setIsEmailVerified(true);
+      setOtpMessage("Verified successfully!");
+      setIsOtpSent(false); // Hide OTP field
+    } catch (err: any) {
+      setOtpMessage(err.message || "Invalid OTP.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // --- Step 3: Submit ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    if (!isEmailVerified) {
+      setError("Please verify your email address first.");
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
@@ -124,21 +188,89 @@ const Signup: React.FC = () => {
               />
             </div>
 
-            {/* Email Address */}
+            {/* --- Email & OTP Section --- */}
             <div className="form-control">
               <label htmlFor="emailId" className="label">
                 <span className="label-text font-medium">Email Address</span>
               </label>
-              <input
-                type="email"
-                id="emailId"
-                placeholder="example@dau.ac.in"
-                className="input input-bordered w-full"
-                value={formData.emailId}
-                onChange={handleChange}
-                required
-              />
+
+              {/* Input Group for Email + Button */}
+              <div className="join w-full">
+                <input
+                  type="email"
+                  id="emailId"
+                  placeholder="example@dau.ac.in"
+                  className={`input input-bordered join-item w-full ${
+                    isEmailVerified ? "border-green-500 text-green-600" : ""
+                  }`}
+                  value={formData.emailId}
+                  onChange={handleChange}
+                  readOnly={isEmailVerified || isOtpSent}
+                  required
+                />
+                {/* Verify Button */}
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={
+                    otpLoading ||
+                    isOtpSent ||
+                    isEmailVerified ||
+                    !formData.emailId
+                  }
+                  className={`btn join-item ${
+                    isEmailVerified ? "btn-success text-white" : "btn-primary"
+                  }`}
+                >
+                  {otpLoading ? (
+                    <Loader2 className="animate-spin w-5 h-5" />
+                  ) : isEmailVerified ? (
+                    <CheckCircle className="w-5 h-5" />
+                  ) : (
+                    "Verify"
+                  )}
+                </button>
+              </div>
+
+              {/* OTP Input - Visible only when sent */}
+              {isOtpSent && !isEmailVerified && (
+                <div className="mt-3 animate-fade-in">
+                  <div className="join w-full">
+                    <input
+                      type="text"
+                      placeholder="Enter OTP"
+                      className="input input-bordered input-sm join-item w-full"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleVerifyOtp}
+                      disabled={otpLoading}
+                      className="btn btn-sm btn-neutral join-item"
+                    >
+                      {otpLoading ? "..." : "Submit"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* OTP Status Message */}
+              {otpMessage && (
+                <label className="label pb-0 pt-1">
+                  <span
+                    className={`label-text-alt ${
+                      isEmailVerified
+                        ? "text-green-600 font-bold"
+                        : "text-orange-500"
+                    }`}
+                  >
+                    {otpMessage}
+                  </span>
+                </label>
+              )}
             </div>
+            {/* --------------------------- */}
 
             {/* Password */}
             <div className="form-control">
@@ -180,7 +312,11 @@ const Signup: React.FC = () => {
               <p className="text-sm text-green-500 text-center">{success}</p>
             )}
 
-            <button type="submit" className="btn btn-primary w-full rounded-md">
+            <button
+              type="submit"
+              className="btn btn-primary w-full rounded-md"
+              disabled={!isEmailVerified} // Disable until verified
+            >
               Sign Up
             </button>
           </form>
