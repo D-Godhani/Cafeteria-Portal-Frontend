@@ -1,13 +1,13 @@
 import axios from "axios";
 
 // Base URLs
-const BASE_URL = "http://localhost:8080";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 const ADMIN_URL = `${BASE_URL}/admin`;
 const USER_URL = `${BASE_URL}/user`;
 
 // Helper to get the token
 const getAuthHeader = () => {
-  // Ensure we run this only on client-side
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("token");
     return { headers: { Authorization: `Bearer ${token}` } };
@@ -22,33 +22,55 @@ export interface Complaint {
   title: string;
   description: string;
   createdAt: string;
-  complaintStatus: "PENDING" | "RESOLVED";
+  complaintStatus: "PENDING" | "RESOLVED" | "ESCALATED" | "IN_PROGRESS";
   emailId: string;
+  imageKey?: string; // Optional S3 Key
 }
 
+export interface CommitteeMember {
+  id?: number;
+  name: string;
+  email: string;
+  designation: string; // e.g. "Faculty Mentor", "Convener"
+  role: "FACULTY_MENTOR" | "CONVENER" | "DEPUTY_CONVENER" | "CORE_MEMBER";
+  studentId?: string | null;
+  photoUrl?: string;
+}
+
+export interface CommitteeResponse {
+  facultyMentor?: CommitteeMember;
+  convener?: CommitteeMember;
+  deputyConvener?: CommitteeMember;
+  coreMembers: CommitteeMember[];
+}
 export interface FeedbackQuestion {
   id: number;
   questionText: string;
   canteenId?: number;
 }
 
-export interface FeedbackResponse {
-  responseId: number;
-  studentId: string;
+// Grouped Feedback Types (Matches Backend DTO)
+export interface FeedbackItemDTO {
+  id: number;
+  option: string; // "VERY_GOOD", etc.
+  reason: string;
+  createdAt: string | number[]; // Handle both string and Java Date Array
+}
+
+export interface QuestionFeedbackMap {
   questionId: number;
   questionText: string;
-  answerText?: string;
-  rating?: number;
-  createdAt: string;
+  responses: FeedbackItemDTO[];
 }
 
 export interface Announcement {
-  id?: number; // Optional if the backend doesn't return ID immediately
+  id?: number;
   title: string;
   message: string;
   createdAt?: string;
   isActive?: boolean;
 }
+
 // --- COMPLAINTS API ---
 
 export const getAllComplaints = async (): Promise<Complaint[]> => {
@@ -62,7 +84,7 @@ export const getAllComplaints = async (): Promise<Complaint[]> => {
 export const escalateComplaint = async (id: number) => {
   const response = await axios.post(
     `${ADMIN_URL}/complaints/${id}/escalate`,
-    "",
+    {}, // Empty Body
     getAuthHeader()
   );
   return response.data;
@@ -70,7 +92,7 @@ export const escalateComplaint = async (id: number) => {
 
 export const updateComplaintStatus = async (
   id: number,
-  status: "RESOLVED" | "PENDING"
+  status: "RESOLVED" | "PENDING" | "IN_PROGRESS" | "ESCALATED"
 ) => {
   const response = await axios.put(
     `${ADMIN_URL}/complaints/${id}/status`,
@@ -80,30 +102,37 @@ export const updateComplaintStatus = async (
   return response.data;
 };
 
+// ✅ NEW: Get Image URL (Securely fetched from Backend S3 Controller)
+// Endpoint: GET /admin/complaints/{id}/image-url
+export const getComplaintImageUrl = async (id: number): Promise<string> => {
+  try {
+    const response = await axios.get(
+      `${ADMIN_URL}/complaints/${id}/image-url`,
+      getAuthHeader()
+    );
+    // Backend returns the URL string directly (or inside an object depending on impl)
+    // Adjust .data based on whether backend returns string or JSON
+    return response.data;
+  } catch (error) {
+    console.error("No image found or error fetching", error);
+    return "";
+  }
+};
+
 // --- FEEDBACK API ---
 
-/**
- * Fetch Questions
- * Note: Uses the USER endpoint as per the provided Postman collection.
- */
 export const getFeedbackQuestions = async (
-  canteenId: string
+  canteenId: string | number
 ): Promise<FeedbackQuestion[]> => {
   try {
-    // Try the User endpoint with Auth (Just in case backend gets fixed)
     const response = await axios.get(
       `${USER_URL}/feedback/canteen/${canteenId}/questions`,
       getAuthHeader()
     );
     return response.data;
   } catch (error) {
-    console.warn("API Failed/Forbidden. Using Mock Data for Questions.");
-    // Return Fake Data so the UI doesn't break
-    return [
-      { id: 101, questionText: "(Mock) Rate the food hygiene" },
-      { id: 102, questionText: "(Mock) Rate the staff behavior" },
-      { id: 103, questionText: "(Mock) How was the taste?" },
-    ];
+    console.warn("API Failed. Returning empty list.");
+    return [];
   }
 };
 
@@ -124,7 +153,6 @@ export const updateFeedbackQuestion = async (
   canteenId: string,
   question: string
 ) => {
-  // Note: Based on your Postman for PUT, it takes body { canteenId, question }
   const response = await axios.put(
     `${ADMIN_URL}/feedback/question/${questionId}`,
     { canteenId, question },
@@ -141,15 +169,23 @@ export const deleteFeedbackQuestion = async (questionId: number) => {
   return response.data;
 };
 
-export const getCanteenFeedbackResponses = async (
-  canteenId: string
-): Promise<FeedbackResponse[]> => {
+// ✅ UPDATED: Returns Grouped Data for Monthly View
+export const getMonthlyFeedbackResponses = async (
+  canteenId: string | number,
+  year: number,
+  month: number
+): Promise<QuestionFeedbackMap[]> => {
   const response = await axios.get(
-    `${ADMIN_URL}/feedback/canteen/${canteenId}/responses`,
-    getAuthHeader()
+    `${ADMIN_URL}/feedback/canteen/${canteenId}/feedback/monthly`,
+    {
+      params: { year, month },
+      ...getAuthHeader(),
+    }
   );
   return response.data;
 };
+
+// --- ANNOUNCEMENTS API ---
 
 export const createAnnouncement = async (title: string, message: string) => {
   const response = await axios.post(
@@ -169,32 +205,110 @@ export const getActiveAnnouncements = async (): Promise<Announcement[]> => {
     return response.data;
   } catch (error) {
     console.error("Error fetching announcements:", error);
-    return []; // Return empty array on failure instead of mock data if you want strictly real data
+    return [];
   }
 };
 
-// ✅ Deactivate API
 export const deactivateAnnouncement = async (id: number) => {
-  try {
-    const response = await axios.put(
-      `${ADMIN_URL}/announcement/${id}/deactivate`,
-      {},
-      getAuthHeader()
-    );
-    return response.data;
-  } catch (error) {
-    // If using mock data, the ID won't exist on server, so we mock success too
-    console.warn("[UI] API failed, simulating success for UI.");
-    return { success: true };
-  }
+  const response = await axios.put(
+    `${ADMIN_URL}/announcement/${id}/deactivate`,
+    {},
+    getAuthHeader()
+  );
+  return response.data;
 };
+
+// --- REPORTS API ---
 
 export const getMonthlyReport = async (month: string): Promise<string> => {
-  // month format should be "YYYY-MM" (e.g., "2025-11")
   const response = await axios.get(`${ADMIN_URL}/reports/llm-monthly`, {
     ...getAuthHeader(),
-    params: { month }, // This appends ?month=2025-11 to the URL
+    params: { month },
   });
-  // The response is a raw string/markdown based on your Postman example
+  return response.data;
+};
+
+export const uploadCanteenAsset = async (
+  canteenId: number,
+  assetType: "image" | "fssai" | "menu",
+  file: File
+) => {
+  const endpoint =
+    assetType === "image"
+      ? "upload-image"
+      : assetType === "fssai"
+      ? "upload-fssai"
+      : "upload-menu";
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  // Get the auth object
+  const auth = getAuthHeader();
+
+  const response = await axios.post(
+    `${ADMIN_URL}/canteens/${canteenId}/${endpoint}`,
+    formData,
+    {
+      headers: {
+        ...auth.headers, // ✅ Ensure this is spreading the Authorization header correctly
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const getCommitteeMembers = async (): Promise<CommitteeResponse> => {
+  const response = await axios.get(
+    `${BASE_URL}/api/committee`,
+    getAuthHeader()
+  );
+  return response.data;
+};
+
+export const addCommitteeMember = async (data: CommitteeMember) => {
+  const response = await axios.post(
+    `${ADMIN_URL}/committee`,
+    data,
+    getAuthHeader()
+  );
+  return response.data;
+};
+
+export const updateCommitteeMember = async (
+  id: number,
+  data: CommitteeMember
+) => {
+  const response = await axios.put(
+    `${ADMIN_URL}/committee/${id}`,
+    data,
+    getAuthHeader()
+  );
+  return response.data;
+};
+
+export const deleteCommitteeMember = async (id: number) => {
+  const response = await axios.delete(
+    `${ADMIN_URL}/committee/${id}`,
+    getAuthHeader()
+  );
+  return response.data;
+};
+
+export const uploadMemberPhoto = async (id: number, file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await axios.post(
+    `${ADMIN_URL}/committee/${id}/upload-photo`,
+    formData,
+    {
+      headers: {
+        ...getAuthHeader().headers,
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
   return response.data;
 };

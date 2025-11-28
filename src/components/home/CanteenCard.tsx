@@ -10,7 +10,7 @@ const PLACEHOLDER_SVG =
 interface CanteenCardProps {
   canteen: Canteen;
 }
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const CanteenCard: React.FC<CanteenCardProps> = ({ canteen }) => {
   return (
     // Use next/link to navigate to the dynamic canteen page
@@ -19,15 +19,11 @@ const CanteenCard: React.FC<CanteenCardProps> = ({ canteen }) => {
       className="card w-full bg-base-100 shadow-xl transition-all hover:shadow-2xl hover:-translate-y-1"
     >
       <figure className="h-48 relative">
-        <Image
-          src={canteen.imageUrl || "https://via.placeholder.com/400x300"} // Fallback if url is missing
+        <img
+          src={`${API_BASE_URL}${canteen.imageUrl}`} // Fallback if url is missing
           alt={canteen.canteenName}
-          fill
           className="object-cover transition-transform duration-500 group-hover:scale-110"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          priority
-          placeholder="blur"
-          blurDataURL={PLACEHOLDER_SVG}
         />
       </figure>
       <div className="card-body">

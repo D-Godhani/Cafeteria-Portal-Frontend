@@ -14,6 +14,7 @@ export interface Canteen {
   info: string;
   fssaiCertificateUrl: string;
   imageUrl: string;
+  menuFilePath: string;
 }
 
 export type CanteenFormData = Omit<Canteen, "id">;

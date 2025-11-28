@@ -46,7 +46,7 @@ export default function AdminReportsPage() {
         <div className="flex items-center gap-4 w-full md:w-auto">
           <button
             onClick={() => router.back()}
-            className="btn btn-circle btn-ghost"
+            className="btn btn-circle rounded-full btn-ghost"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
@@ -76,7 +76,7 @@ export default function AdminReportsPage() {
           <button
             onClick={handleGenerateReport}
             disabled={loading}
-            className="btn btn-primary btn-sm gap-2"
+            className="btn btn-primary rounded-lg btn-sm gap-2"
           >
             {loading ? (
               <span className="loading loading-spinner"></span>
@@ -110,7 +110,7 @@ export default function AdminReportsPage() {
                 </div>
                 <button
                   onClick={handlePrint}
-                  className="btn btn-ghost btn-sm gap-2 print:hidden"
+                  className="btn btn-ghost rounded-lg btn-sm gap-2 print:hidden"
                 >
                   <Download className="w-4 h-4" /> Print / PDF
                 </button>

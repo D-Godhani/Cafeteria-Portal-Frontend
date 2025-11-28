@@ -10,6 +10,7 @@ export interface Canteen {
   info: string;
   fssaiCertificateUrl: string;
   imageUrl: string;
+  menuFilePath: string;
 }
 
 type ID = number | string;

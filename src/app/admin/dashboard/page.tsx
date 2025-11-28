@@ -9,7 +9,8 @@ import {
   MessageSquareWarning,
   MessageCircle,
   LayoutDashboard,
-  FileText, // New icon for Reports
+  FileText,
+  Users, // New icon for Reports
 } from "lucide-react";
 
 export default function AdminDashboardPage() {
@@ -19,19 +20,18 @@ export default function AdminDashboardPage() {
     {
       title: "Manage Canteens",
       description:
-        "Add new canteens, edit details, or update operational status.",
+        "Add new canteens, edit details, or updatte existing canteen information.",
       icon: Store,
       href: "/admin/canteens",
       btnText: "Go to Canteens",
       color: "text-blue-500",
     },
     {
-      title: "Menu Updates",
-      description:
-        "Update daily menus, change prices, and manage food availability.",
-      icon: UtensilsCrossed,
-      href: "/admin/menus",
-      btnText: "Update Menus",
+      title: "Committee Members",
+      description: "Manage student core members and faculty mentors.",
+      icon: Users,
+      href: "/admin/committee",
+      btnText: "Manage Team",
       color: "text-green-500",
     },
     {

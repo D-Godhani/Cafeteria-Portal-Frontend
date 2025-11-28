@@ -10,6 +10,7 @@ import {
   resetPassword,
 } from "../../../services/authService"; // Ensure this path is correct
 import { X, Loader2, KeyRound, CheckCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 const Login: React.FC = () => {
   // 1. Manage state for inputs and errors
@@ -48,9 +49,10 @@ const Login: React.FC = () => {
 
     try {
       await login({ studentId: studentId, password });
+      toast.success("Logged in successfully!");
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "An error occurred during login.");
+      toast.error(err.message || "An error occurred during login.");
     }
   };
 

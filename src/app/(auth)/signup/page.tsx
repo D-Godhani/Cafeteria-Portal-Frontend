@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts/authContext"; // Corrected path
 import { Loader2, CheckCircle } from "lucide-react"; // Icons for status
+import toast from "react-hot-toast";
 // import logo from "../../../../public/logo.png";
 
 const Signup: React.FC = () => {
@@ -90,12 +91,12 @@ const Signup: React.FC = () => {
     setSuccess("");
 
     if (!isEmailVerified) {
-      setError("Please verify your email address first.");
+      toast.error("Please verify your email address first.");
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+      toast.error("Passwords do not match.");
       return;
     }
 
@@ -108,14 +109,14 @@ const Signup: React.FC = () => {
         password: formData.password,
       });
 
-      setSuccess("Registration successful! Redirecting to login...");
+      toast.success("Registration successful! Redirecting to login...");
 
       setTimeout(() => {
         router.push("/login");
       }, 2000);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "An error occurred during registration.");
+      toast.error(err.message || "An error occurred during registration.");
     }
   };
 

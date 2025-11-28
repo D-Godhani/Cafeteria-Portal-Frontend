@@ -23,6 +23,7 @@ import {
   deactivateAnnouncement,
   Announcement,
 } from "@/services/adminService";
+import toast from "react-hot-toast";
 
 export default function AdminAnnouncementsPage() {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function AdminAnnouncementsPage() {
         setAnnouncements([]);
       }
     } catch (error) {
-      console.error("Failed to fetch announcements", error);
+      toast.error("Failed to fetch announcements");
     } finally {
       setLoading(false);
     }
@@ -103,8 +104,8 @@ export default function AdminAnnouncementsPage() {
       // Optimistic UI Update: Remove it immediately
       setAnnouncements((prev) => prev.filter((ann) => ann.id !== id));
     } catch (error) {
-      console.error(error);
-      alert("Failed to deactivate.");
+      // console.error(error);
+      toast.error("Failed to deactivate.");
     } finally {
       setDeactivatingId(null);
     }
@@ -119,7 +120,7 @@ export default function AdminAnnouncementsPage() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
-              className="btn btn-circle btn-ghost btn-sm hover:bg-base-200"
+              className="btn btn-circle btn-ghost rounded-lg btn-sm hover:bg-base-200"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -216,7 +217,7 @@ export default function AdminAnnouncementsPage() {
                     {/* Submit Button */}
                     <button
                       type="submit"
-                      className="btn btn-primary w-full shadow-lg shadow-primary/20 mt-2"
+                      className="btn btn-primary w-full rounded-lg shadow-lg shadow-primary/20 mt-2"
                       disabled={submitting}
                     >
                       {submitting ? (
@@ -244,7 +245,7 @@ export default function AdminAnnouncementsPage() {
               </h2>
               <button
                 onClick={fetchData}
-                className="btn btn-ghost btn-sm text-gray-500 hover:text-primary"
+                className="btn btn-ghost btn-sm rounded-lg text-gray-500 hover:text-primary"
                 disabled={loading}
               >
                 <Loader2
@@ -310,7 +311,7 @@ export default function AdminAnnouncementsPage() {
                             <button
                               onClick={() => ann.id && handleDeactivate(ann.id)}
                               disabled={deactivatingId === ann.id}
-                              className="btn btn-square btn-ghost btn-sm text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              className="btn btn-square btn-ghost rounded-full btn-sm text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                             >
                               {deactivatingId === ann.id ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
